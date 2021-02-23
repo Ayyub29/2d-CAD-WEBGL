@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Tubes Grafkom</title>
+    <meta name="author" content="Kelompok 10 K01">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  </head>
+
+  <body>
+    <style>
+      .flexbox {
+        display:flex;
+      }
+      .setting-container{
+        margin-left:50px;
+        border:0.5px dashed black;
+        padding:15px;
+        height:fit-content;
+      }
+    </style>
+
+
+    <div class="flexbox">
+      <canvas id="ourCanvas" width="640" height="480" style="border:2px solid blue;">
+          Browser kamu belum support HTML mas, supportnya hari aku.
+      </canvas>
+      <div class="setting-container">
+        <label for="shape">Choose a shape:</label>
+
+        <select name="shape" class="shape" id="shape">
+          <option value="line">line</option>
+          <option value="square">square</option>
+          <option value="polygon">polygon</option>
+        </select>
+        <br>
+        <br>
+        <div class="regular">
+          <label for="n-side">n-side: </label>
+          <input type="number" id="n-side" name="n-side" min="2" style="width:80px;"> 
+          <input type="checkbox" id="regular" name="regular" value="regular"> regular <br>
+        </div> 
+        
+        <br>
+        <br>
+
+        <label for="shape">Set your color:</label>
+        <br>
+
+        <label for="shape">red:</label>
+        <input type="range" min="0" max="255" value="0" class="slider" name="red" id="red">
+        <br>
+
+        <label for="shape">green:</label>
+        <input type="range" min="0" max="255" value="0" class="slider" name="green" id="green">
+        <br>
+
+        <label for="shape">blue:</label>
+        <input type="range" min="0" max="255" value="0" class="slider" name="blue" id="blue">
+
+      </div>
+    </div>
+    
+    <!-- <script type="text/javascript" src="libs/glUtils.js"></script> -->
+    <!-- <script type="text/javascript" src="animation.js"></script> -->
+  </body>
+</html>
