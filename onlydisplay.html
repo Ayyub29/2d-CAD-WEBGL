@@ -4,11 +4,10 @@
         attribute vec4 vPosition; attribute vec4 vColor; varying vec4 fColor; void main() { gl_Position = vPosition; fColor = vColor; }
     </script>
     <script id="fragment-shader" type="x-shader/x-fragment">
-    precision mediump float; varying vec4 fColor; void main() { gl_FragColor = fColor; }
+        precision mediump float; varying vec4 fColor; void main() { gl_FragColor = fColor; }
     </script>
-    <script src="http://greggman.github.com/webgl-fundamentals/webgl/resources/webgl-utils.js"></script>
    <body>
-      <canvas width = "570" height = "570" id = "my_Canvas" style="displayL"></canvas>
+      <canvas width = "570" height = "570" id = "my_Canvas" style="display:center;"></canvas>
       <div>
         <select id="mymenu" size="7 ">
           <option value="0 ">Black</option>
@@ -21,40 +20,43 @@
         </select>
         <button id="clearButton">Clear</button>
       </div>
-      <script>
+      <script src="http://greggman.github.com/webgl-fundamentals/webgl/resources/webgl-utils.js"></script>
+      <!-- <script>
           "use strict";
 
             var canvas;
             var gl;
-
+            var num_choice = 0;
             var maxNumVertices = 20000;
             var index = 0;
 
-            var delay = 50;
+            var delay = 5000;
 
             var cindex = 0;
 
-            var colors = [
-            vec4(0.0, 0.0, 0.0, 1.0), // black
-            vec4(1.0, 0.0, 0.0, 1.0), // red
-            vec4(1.0, 1.0, 0.0, 1.0), // yellow
-            vec4(0.0, 1.0, 0.0, 1.0), // green
-            vec4(0.0, 0.0, 1.0, 1.0), // blue
-            vec4(1.0, 0.0, 1.0, 1.0), // magenta
-            vec4(0.0, 1.0, 1.0, 1.0) // cyan
-            ];
+            // var colors = [
+            // vec4(0.0, 0.0, 0.0, 1.0), // black
+            // vec4(1.0, 0.0, 0.0, 1.0), // red
+            // vec4(1.0, 1.0, 0.0, 1.0), // yellow
+            // vec4(0.0, 1.0, 0.0, 1.0), // green
+            // vec4(0.0, 0.0, 1.0, 1.0), // blue
+            // vec4(1.0, 0.0, 1.0, 1.0), // magenta
+            // vec4(0.0, 1.0, 1.0, 1.0) // cyan
+            // ];
             var t;
             var numPolygons = 0;
             var numIndices = [];
             numIndices[0] = 0;
             var start = [0];
+            var indices = [1,3,4]
 
             var mouseClicked = false;
 
             window.onload = function init() {
-            canvas = document.getElementById("gl-canvas");
+            canvas = document.getElementById("my_Canvas");
+            gl = canvas.getContext('experimental-webgl');
 
-            gl = WebGLUtils.setupWebGL(canvas);
+            // gl = WebGLUtils.setupWebGL(canvas);
             if (!gl) {
                 alert("WebGL isn't available");
             }
@@ -63,6 +65,7 @@
 
             m.addEventListener("click", function() {
                 cindex = m.selectedIndex;
+                num_choice = m.selectedIndex;
             });
 
             var c = document.getElementById("clearButton")
@@ -85,22 +88,22 @@
                 mouseClicked = false;
             });
             
-            canvas.addEventListener("mousemove", function(event) {
-                if(mouseClicked){
-                t = vec2(2 * event.clientX / canvas.width - 1,
-                    2 * (canvas.height - event.clientY) / canvas.height - 1);
-                gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
-                gl.bufferSubData(gl.ARRAY_BUFFER, 8 * index, flatten(t));
+            // canvas.addEventListener("mousemove", function(event) {
+            //     if(mouseClicked){
+            //     t = vec2(2 * event.clientX / canvas.width - 1,
+            //         2 * (canvas.height - event.clientY) / canvas.height - 1);
+            //     gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
+            //     gl.bufferSubData(gl.ARRAY_BUFFER, 8 * index, flatten(t));
 
-                t = vec4(colors[cindex]);
+            //     t = vec4(colors[cindex]);
 
-                gl.bindBuffer(gl.ARRAY_BUFFER, cBufferId);
-                gl.bufferSubData(gl.ARRAY_BUFFER, 16 * index, flatten(t));
+            //     gl.bindBuffer(gl.ARRAY_BUFFER, cBufferId);
+            //     gl.bufferSubData(gl.ARRAY_BUFFER, 16 * index, flatten(t));
 
-                numIndices[numPolygons]++;
-                index++;
-                }
-            });
+            //     numIndices[numPolygons]++;
+            //     index++;
+            //     }
+            // });
 
             gl.viewport(0, 0, canvas.width, canvas.height);
             gl.clearColor(0.8, 0.8, 0.8, 1.0);
@@ -109,20 +112,59 @@
             //
             //  Load shaders and initialize attribute buffers
             //
-            var program = initShaders(gl, "vertex-shader", "fragment-shader");
-            gl.useProgram(program);
+            // Vertex shader source code
+            var vertCode =
+            'attribute vec3 coordinates;' +
+            'void main(void) {' +
+            ' gl_Position = vec4(coordinates, 1.0);' +
+            '}';
+
+            // Create a vertex shader object
+            var vertShader = gl.createShader(gl.VERTEX_SHADER);
+
+            // Attach vertex shader source code
+            gl.shaderSource(vertShader, vertCode);
+
+            // Compile the vertex shader
+            gl.compileShader(vertShader);
+
+            // Fragment shader source code
+            var fragCode =
+            'void main(void) {' +
+            ' gl_FragColor = vec4(0.0, 0.0, 0.0, 0.1);' +
+            '}';
+
+            // Create fragment shader object 
+            var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
+
+            // Attach fragment shader source code
+            gl.shaderSource(fragShader, fragCode);
+
+            // Compile the fragmentt shader
+            gl.compileShader(fragShader);
+
+            var shaderProgram = gl.createProgram();
+            // Attach a vertex shader
+            gl.attachShader(shaderProgram, vertShader);
+
+            // Attach a fragment shader
+            gl.attachShader(shaderProgram, fragShader);
+
+            // Link both the programs
+            gl.linkProgram(shaderProgram);
+            gl.useProgram(shaderProgram);
 
             var bufferId = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
             gl.bufferData(gl.ARRAY_BUFFER, 8 * maxNumVertices, gl.STATIC_DRAW);
-            var vPos = gl.getAttribLocation(program, "vPosition");
+            var vPos = gl.getAttribLocation(shaderProgram, "vPosition");
             gl.vertexAttribPointer(vPos, 2, gl.FLOAT, false, 0, 0);
             gl.enableVertexAttribArray(vPos);
 
             var cBufferId = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, cBufferId);
             gl.bufferData(gl.ARRAY_BUFFER, 16 * maxNumVertices, gl.STATIC_DRAW);
-            var vColor = gl.getAttribLocation(program, "vColor");
+            var vColor = gl.getAttribLocation(shaderProgram, "vColor");
             gl.vertexAttribPointer(vColor, 4, gl.FLOAT, false, 0, 0);
             gl.enableVertexAttribArray(vColor);
 
@@ -130,12 +172,15 @@
             }
 
             function render() {
+                
 
             gl.clear(gl.COLOR_BUFFER_BIT);
 
-            for (var i = 0; i <= numPolygons; i++) {
-                gl.drawArrays(gl.LINE_STRIP, start[i], numIndices[i]);
-            }
+            // for (var i = 0; i <= numPolygons; i++) {
+            //     gl.drawArrays(gl.LINE_STRIP, start[i], numIndices[i]);
+            // }
+            gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+            alert(num_choice);
 
             setTimeout(
                 function() {
@@ -143,130 +188,200 @@
                 }, delay
             );
             }
-      </script>
-      <!-- <script>
-         /*============ Creating a canvas =================*/
-      
-         var canvas = document.getElementById('my_Canvas');
-         gl = canvas.getContext('experimental-webgl');
-      
-         /*========== Defining and storing the geometry =========*/
-
-         var vertices = [
-            -0.5,0.5,0.0,
-            -0.5,-0.5,0.0,
-            0.5,-0.5,0.0,
-            0.5,0.5,0.0 
-         ];
-
-         indices = [3,2,1,3,1,0];
-
-         // Create an empty buffer object to store vertex buffer
-         var vertex_buffer = gl.createBuffer();
-
-         // Bind appropriate array buffer to it
-         gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
-
-         // Pass the vertex data to the buffer
-         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-
-         // Unbind the buffer
-         gl.bindBuffer(gl.ARRAY_BUFFER, null);
-
-         // Create an empty buffer object to store Index buffer
-         var Index_Buffer = gl.createBuffer();
-
-         // Bind appropriate array buffer to it
-         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Index_Buffer);
-
-         // Pass the vertex data to the buffer
-         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
-
-         // Unbind the buffer
-         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-
-         /*====================== Shaders =======================*/
-
-         // Vertex shader source code
-         var vertCode =
-            'attribute vec3 coordinates;' +
-            'void main(void) {' +
-               ' gl_Position = vec4(coordinates, 1.0);' +
-            '}';
-
-         // Create a vertex shader object
-         var vertShader = gl.createShader(gl.VERTEX_SHADER);
-
-         // Attach vertex shader source code
-         gl.shaderSource(vertShader, vertCode);
-
-         // Compile the vertex shader
-         gl.compileShader(vertShader);
-
-         // Fragment shader source code
-         var fragCode =
-            'void main(void) {' +
-               ' gl_FragColor = vec4(0.0, 0.0, 0.0, 0.1);' +
-            '}';
-
-         // Create fragment shader object 
-         var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
-
-         // Attach fragment shader source code
-         gl.shaderSource(fragShader, fragCode);
-
-         // Compile the fragmentt shader
-         gl.compileShader(fragShader);
-
-         // Create a shader program object to
-         // store the combined shader program
-         var shaderProgram = gl.createProgram();
-
-         // Attach a vertex shader
-         gl.attachShader(shaderProgram, vertShader);
-
-         // Attach a fragment shader
-         gl.attachShader(shaderProgram, fragShader);
-
-         // Link both the programs
-         gl.linkProgram(shaderProgram);
-
-         // Use the combined shader program object
-         gl.useProgram(shaderProgram);
-
-         /* ======= Associating shaders to buffer objects =======*/
-
-         // Bind vertex buffer object
-         gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
-
-         // Bind index buffer object
-         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Index_Buffer); 
-
-         // Get the attribute location
-         var coord = gl.getAttribLocation(shaderProgram, "coordinates");
-
-         // Point an attribute to the currently bound VBO
-         gl.vertexAttribPointer(coord, 3, gl.FLOAT, false, 0, 0);
-
-         // Enable the attribute
-         gl.enableVertexAttribArray(coord);
-
-         /*============= Drawing the Quad ================*/
-
-         // Clear the canvas
-         gl.clearColor(0.5, 0.5, 0.5, 0.9);
-
-         // Enable the depth test
-         gl.enable(gl.DEPTH_TEST);
-
-         // Clear the color buffer bit
-         gl.clear(gl.COLOR_BUFFER_BIT);
-
-         // Set the view port
-         gl.viewport(0,0,canvas.width,canvas.height);
-
-         // Draw the square
-         gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
       </script> -->
+      <script>
+        "use strict";
+
+        var canvas = document.getElementById("my_Canvas");
+        var gl;
+        var num_choice = 0;
+        var maxNumVertices = 20000;
+        var index = 0;
+
+        var delay = 5000;
+
+        var cindex = 0;
+
+        // var colors = [
+        // vec4(0.0, 0.0, 0.0, 1.0), // black
+        // vec4(1.0, 0.0, 0.0, 1.0), // red
+        // vec4(1.0, 1.0, 0.0, 1.0), // yellow
+        // vec4(0.0, 1.0, 0.0, 1.0), // green
+        // vec4(0.0, 0.0, 1.0, 1.0), // blue
+        // vec4(1.0, 0.0, 1.0, 1.0), // magenta
+        // vec4(0.0, 1.0, 1.0, 1.0) // cyan
+        // ];
+        var t;
+        var numPolygons = 0;
+        var numIndices = [];
+        numIndices[0] = 0;
+        var start = [0];
+        var indices = [1,3,4]
+
+        var mouseClicked = false;
+
+        window.onload = function init() {
+            canvas = document.getElementById("my_Canvas");
+            gl = canvas.getContext('experimental-webgl');
+
+            // gl = WebGLUtils.setupWebGL(canvas);
+            if (!gl) {
+            alert("WebGL isn't available");
+            }
+
+            var m = document.getElementById("mymenu");
+
+            m.addEventListener("click", function() {
+            cindex = m.selectedIndex;
+            num_choice = m.selectedIndex;
+            });
+
+            var c = document.getElementById("clearButton")
+            c.addEventListener("click", function(){
+            index = 0;
+            numPolygons = 0;
+            numIndices = [];
+            numIndices[0] = 0;
+            start = [0];
+            });
+
+            canvas.addEventListener("mousedown", function(event){
+            mouseClicked = true;
+            numPolygons++;
+            numIndices[numPolygons] = 0;
+            start[numPolygons] = index;
+            });
+
+            canvas.addEventListener("mouseup", function(event){
+            mouseClicked = false;
+            });
+            
+            /*============ Creating a canvas =================*/
+        
+            var canvas = document.getElementById('my_Canvas');
+            gl = canvas.getContext('experimental-webgl');
+        
+            /*========== Defining and storing the geometry =========*/
+
+            var vertices = [
+                -0.5,0.5,0.0,
+                -0.5,-0.5,0.0,
+                0.5,-0.5,0.0,
+                0.5,0.5,0.0 
+            ];
+
+            indices = [3,2,1,3,1,0];
+
+            // Create an empty buffer object to store vertex buffer
+            var vertex_buffer = gl.createBuffer();
+
+            // Bind appropriate array buffer to it
+            gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
+
+            // Pass the vertex data to the buffer
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+
+            // Unbind the buffer
+            gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+            // Create an empty buffer object to store Index buffer
+            var Index_Buffer = gl.createBuffer();
+
+            // Bind appropriate array buffer to it
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Index_Buffer);
+
+            // Pass the vertex data to the buffer
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+
+            // Unbind the buffer
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+            /*====================== Shaders =======================*/
+
+            // Vertex shader source code
+            var vertCode =
+                'attribute vec3 coordinates;' +
+                'void main(void) {' +
+                ' gl_Position = vec4(coordinates, 1.0);' +
+                '}';
+
+            // Create a vertex shader object
+            var vertShader = gl.createShader(gl.VERTEX_SHADER);
+
+            // Attach vertex shader source code
+            gl.shaderSource(vertShader, vertCode);
+
+            // Compile the vertex shader
+            gl.compileShader(vertShader);
+
+            // Fragment shader source code
+            var fragCode =
+                'void main(void) {' +
+                ' gl_FragColor = vec4(0.0, 0.0, 0.0, 0.1);' +
+                '}';
+
+            // Create fragment shader object 
+            var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
+
+            // Attach fragment shader source code
+            gl.shaderSource(fragShader, fragCode);
+
+            // Compile the fragmentt shader
+            gl.compileShader(fragShader);
+
+            // Create a shader program object to
+            // store the combined shader program
+            var shaderProgram = gl.createProgram();
+
+            // Attach a vertex shader
+            gl.attachShader(shaderProgram, vertShader);
+
+            // Attach a fragment shader
+            gl.attachShader(shaderProgram, fragShader);
+
+            // Link both the programs
+            gl.linkProgram(shaderProgram);
+
+            // Use the combined shader program object
+            gl.useProgram(shaderProgram);
+
+            /* ======= Associating shaders to buffer objects =======*/
+
+            // Bind vertex buffer object
+            gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
+
+            // Bind index buffer object
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Index_Buffer); 
+
+            // Get the attribute location
+            var coord = gl.getAttribLocation(shaderProgram, "coordinates");
+
+            // Point an attribute to the currently bound VBO
+            gl.vertexAttribPointer(coord, 3, gl.FLOAT, false, 0, 0);
+
+            // Enable the attribute
+            gl.enableVertexAttribArray(coord);
+            render();
+        } 
+        function render() {
+            /*============= Drawing the Quad ================*/
+            // Clear the canvas
+            gl.clearColor(0.5, 0.5, 0.5, 0.9);
+            // Enable the depth test
+            gl.enable(gl.DEPTH_TEST);
+            // Clear the color buffer bit
+            gl.clear(gl.COLOR_BUFFER_BIT);
+            // Set the view port
+            gl.viewport(0,0,canvas.width,canvas.height);
+            // Draw the square
+            gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+            alert(num_choice);
+            setTimeout(
+                function() {
+                requestAnimFrame(render);
+                }, delay
+            );
+        }
+      </script>
    </body>
 </html>
