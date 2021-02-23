@@ -1,16 +1,22 @@
 "use strict";
 
-var canvas = document.getElementById("my_Canvas");
+var canvas;
 var gl;
 var colors = [];
 var intendedLocation_X = 0;
-var inte
+var intendedLocation_Y = 0;
 var redValue = 0;
 var greenValue = 0;
 var blueValue = 0;
 var colorArray;
 var maxNumVertices = 20000;
 var index = 0;
+var vertices = [];
+var defaultSquare = [
+    -0.5,0.5,0.0,
+    -0.5,-0.5,0.0,
+    0.5,-0.5,0.0,
+    0.5,0.5,0.0 ]
 
 var delay = 50;
 
@@ -23,6 +29,30 @@ var start = [0];
 var indices = [1,3,4]
 
 var mouseClicked = false;
+
+function getIntendedPosition(event, canvas) {
+
+    const bcr = canvas.getBoundingClientRect();
+    const bcr_x = event.clientX - bcr.left;
+    const bcr_y = event.clientY - bcr.top;
+
+    return {
+        x: (bcr_x - (canvas.scrollWidth/2)) / (canvas.scrollWidth/2),
+        y: ((bcr_y > (canvas.scrollHeight/2)) ? -1 : 1) * Math.abs(bcr_y - (canvas.scrollHeight/2)) / (canvas.scrollHeight/2)
+    };
+}
+
+function setVertices(defaultShape, transX, transY, numVertices){
+    var i;
+    var j = 0;
+    vertices = [];
+    for (i = 0; i < numVertices; i++){
+        vertices.push(defaultShape[i + j]+transX);
+        vertices.push(defaultShape[i + j + 1]+transY);
+        vertices.push(0.0);
+        j = j+2;
+    }
+}
 
 function setColor(redval, greenval, blueval, numvertices){
     var i;
@@ -80,26 +110,23 @@ window.onload = function init() {
 
     canvas.addEventListener("mousedown", function(event){
     mouseClicked = true;
+    var position = getIntendedPosition(event, canvas);
+    setVertices(defaultSquare, position.x, position.y, 4);
+    console.log(position.x+" is X");
+    console.log(position.y+"is Y");
     numPolygons++;
     numIndices[numPolygons] = 0;
     start[numPolygons] = index;
+    render();
     });
 
     canvas.addEventListener("mouseup", function(event){
     mouseClicked = false;
     });
 
-    render();
 } 
 function render() {
     /*========== Defining and storing the geometry and colors =========*/
-
-    var vertices = [
-        -0.5,0.5,0.0,
-        -0.5,-0.5,0.0,
-        0.5,-0.5,0.0,
-        0.5,0.5,0.0 
-    ];
 
     indices = [3,2,1,3,1,0];
 
@@ -215,7 +242,7 @@ function render() {
     gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
     setTimeout(
         function() {
-        requestAnimFrame(render);
-        }, delay
+            render();
+        }, 5000
     );
 }
