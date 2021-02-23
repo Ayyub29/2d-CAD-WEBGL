@@ -13,10 +13,10 @@ var maxNumVertices = 20000;
 var index = 0;
 var vertices = [];
 var defaultSquare = [
-    -0.5,0.5,0.0,
-    -0.5,-0.5,0.0,
-    0.5,-0.5,0.0,
-    0.5,0.5,0.0 ]
+    -0.1,0.1,0.0,
+    -0.1,-0.1,0.0,
+    0.1,-0.1,0.0,
+    0.1,0.1,0.0 ]
 
 var delay = 50;
 
@@ -26,7 +26,7 @@ var numPolygons = 0;
 var numIndices = [];
 numIndices[0] = 0;
 var start = [0];
-var indices = [1,3,4]
+var indices = [];
 
 var mouseClicked = false;
 
@@ -45,12 +45,21 @@ function getIntendedPosition(event, canvas) {
 function setVertices(defaultShape, transX, transY, numVertices){
     var i;
     var j = 0;
-    vertices = [];
+    //vertices = [];
     for (i = 0; i < numVertices; i++){
         vertices.push(defaultShape[i + j]+transX);
         vertices.push(defaultShape[i + j + 1]+transY);
         vertices.push(0.0);
         j = j+2;
+    }
+}
+
+function setIndices(lastLength, numVertices, prevNumSisi){
+    var j;
+    for (j = 1; j < numVertices-1; j++) {
+        indices.push(j + prevNumSisi);
+        indices.push(j + prevNumSisi + 1);
+        indices.push(0 + prevNumSisi);
     }
 }
 
@@ -111,6 +120,7 @@ window.onload = function init() {
     canvas.addEventListener("mousedown", function(event){
     mouseClicked = true;
     var position = getIntendedPosition(event, canvas);
+    setIndices(indices.length, 4, vertices.length);
     setVertices(defaultSquare, position.x, position.y, 4);
     console.log(position.x+" is X");
     console.log(position.y+"is Y");
@@ -128,7 +138,7 @@ window.onload = function init() {
 function render() {
     /*========== Defining and storing the geometry and colors =========*/
 
-    indices = [3,2,1,3,1,0];
+    // indices = [1,2,0,2,3,0];
 
     // Create an empty buffer object to store vertex buffer
     var vertex_buffer = gl.createBuffer();
