@@ -42,6 +42,13 @@ function getIntendedPosition(event, canvas) {
     };
 }
 
+function resize(defaultShape, k){
+    for(var i=0; i<defaultShape.length; i++) {
+        defaultShape[i] *= k;
+    }
+    return defaultShape;
+}
+
 function setVertices(defaultShape, transX, transY, numVertices){
     var i;
     var j = 0;
