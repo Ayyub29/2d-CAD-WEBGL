@@ -86,10 +86,7 @@ window.onload = function init() {
 
     r.addEventListener("click", function() {
     redValue = r.value/255;
-    console.log(redValue + "RED");
-    console.log(colors);
     setColor(redValue, greenValue, blueValue, 4);
-    console.log(colors);
     });
 
     var g = document.getElementById("green");
@@ -97,7 +94,6 @@ window.onload = function init() {
     g.addEventListener("click", function() {
     greenValue = g.value/255;
     setColor(redValue, greenValue, blueValue, 4);
-    console.log(greenValue + "GREEN");
     });
 
     var b = document.getElementById("blue");
@@ -105,7 +101,6 @@ window.onload = function init() {
     b.addEventListener("click", function() {
     blueValue = b.value/255;
     setColor(redValue, greenValue, blueValue, 4);
-    console.log(blueValue + "BLUE");
     });
 
     // var c = document.getElementById("clear")
@@ -120,8 +115,10 @@ window.onload = function init() {
     canvas.addEventListener("mousedown", function(event){
     mouseClicked = true;
     var position = getIntendedPosition(event, canvas);
-    setIndices(indices.length, 4, vertices.length);
+    setIndices(indices.length, 4, vertices.length/3);
     setVertices(defaultSquare, position.x, position.y, 4);
+    console.log(vertices);
+    console.log(indices);
     console.log(position.x+" is X");
     console.log(position.y+"is Y");
     numPolygons++;
