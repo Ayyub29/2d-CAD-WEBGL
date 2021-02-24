@@ -2,16 +2,25 @@
 
 var canvas;
 var gl;
-var colors = [];
+
+var menu = "drawing";
+
 var intendedLocation_X = 0;
 var intendedLocation_Y = 0;
+
 var redValue = 0;
 var greenValue = 0;
 var blueValue = 0;
+
 var colorArray;
 var maxNumVertices = 20000;
-var index = 0;
-var vertices = [];
+var editedShapeIndex;
+
+var defaultLine = [
+    -0.1,0.0,0.0,
+    0.1,0.0,0.0,
+]
+
 var defaultSquare = [
     -0.1,0.1,0.0,
     -0.1,-0.1,0.0,
@@ -35,13 +44,13 @@ var defaultPolima = [
 
 var delay = 50;
 
-var cindex = 0;
-var t;
-var numPolygons = 0;
-var numIndices = [];
-numIndices[0] = 0;
-var start = [0];
+var colors = [];
+var list_vertices = [];
+var shape_center_point = [];
+var vertices = [];
 var indices = [];
+var shape_chosen = "line";
+var nside_chosen = 3;
 
 var mouseClicked = false;
 
@@ -67,21 +76,33 @@ function resize(defaultShape, k){
 function setVertices(defaultShape, transX, transY, numVertices){
     var i;
     var j = 0;
-    //vertices = [];
+    var temp_arr =[];
+    var temp_arr2 = [];
+    temp_arr2.push(transX);
+    temp_arr2.push(transY);
     for (i = 0; i < numVertices; i++){
         vertices.push(defaultShape[i + j]+transX);
         vertices.push(defaultShape[i + j + 1]+transY);
-        vertices.push(0.0);
+        temp_arr.push(defaultShape[i + j]+transX);
+        temp_arr.push(defaultShape[i + j + 1]+transY);
+        if (numVertices > 2){
+            vertices.push(0.0);
+            temp_arr.push(0.0);
+        }
         j = j+2;
     }
+    list_vertices.push(temp_arr);
+    shape_center_point.push(temp_arr2);
 }
 
-function setIndices(lastLength, numVertices, prevNumSisi){
+function setIndices(numVertices, prevNumSisi){
     var j;
     for (j = 1; j < numVertices-1; j++) {
         indices.push(j + prevNumSisi);
         indices.push(j + prevNumSisi + 1);
-        indices.push(0 + prevNumSisi);
+        if (numVertices > 2){
+            indices.push(0 + prevNumSisi);
+        }
     }
 }
 
@@ -93,6 +114,14 @@ function setColor(redval, greenval, blueval, numvertices){
         colors.push(greenval);
         colors.push(blueval);
     }
+}
+
+function pointerOnWhat(x_pos, y_pos){
+    return 
+}
+
+function calculateDistance(x0, y0, x1, y1){
+    return (Math.sqrt(Math.pow((x1-x0),2) + Math.pow((y1-y0),2)));
 }
 
 function createVertexfromShape(n, length){
@@ -109,6 +138,12 @@ function createVertexfromShape(n, length){
     return vertex
 }
 
+function clearCanvas(){
+    vertices = [];
+    indices = [];
+    colors = [];
+}
+
 window.onload = function init() {
     canvas = document.getElementById("ourCanvas");
     gl = canvas.getContext('experimental-webgl');
@@ -117,6 +152,20 @@ window.onload = function init() {
     if (!gl) {
     alert("WebGL isn't available");
     }
+
+    var shp = document.getElementById("shape");
+
+    shp.addEventListener("click", function() {
+    shape_chosen = shp.value;
+    });
+
+    var ns = document.getElementById("n-side");
+
+    ns.addEventListener("click", function() {
+    nside_chosen = ns.value;
+    console.log(nside_chosen);
+    console.log("test");
+    });
 
     var r = document.getElementById("red");
 
@@ -139,27 +188,52 @@ window.onload = function init() {
     setColor(redValue, greenValue, blueValue, 4);
     });
 
-    // var c = document.getElementById("clear")
-    // c.addEventListener("click", function(){
-    // index = 0;
-    // numPolygons = 0;
-    // numIndices = [];
-    // numIndices[0] = 0;
-    // start = [0];
-    // });
+    var mn = document.getElementById("selected_menu");
+    
+    mn.addEventListener("click", function() {
+    menu = mn.value;
+    });
+
+    var c = document.getElementById("clear")
+    c.addEventListener("click", function(){
+    clearCanvas(canvas);
+    });
 
     canvas.addEventListener("mousedown", function(event){
     mouseClicked = true;
     var position = getIntendedPosition(event, canvas);
-    setIndices(indices.length, 4, vertices.length/3);
-    setVertices(defaultSquare, position.x, position.y, 4);
-    console.log(vertices);
-    console.log(indices);
-    console.log(position.x+" is X");
-    console.log(position.y+"is Y");
-    numPolygons++;
-    numIndices[numPolygons] = 0;
-    start[numPolygons] = index;
+    if (menu === "drawing"){
+        console.log("You are drawing");
+        if (shape_chosen === "line"){
+            // setIndices(2, vertices.length/3);
+            // setVertices(defaultLine, position.x, position.y, 2);
+        }
+        else if (shape_chosen === "square"){
+            setIndices(4, vertices.length/3);
+            setVertices(defaultSquare, position.x, position.y, 4);
+        }
+        else if (shape_chosen === "polygon"){
+            setIndices(nside_chosen, vertices.length/3);
+            if (nside_chosen == 3){
+                setVertices(defaultPolithree, position.x, position.y, nside_chosen);
+            }
+            else if (nside_chosen == 4){
+                setVertices(defaultSquare, position.x, position.y, nside_chosen);
+            }
+            else if (nside_chosen == 5){
+                setVertices(defaultPolima, position.x, position.y, nside_chosen);
+            }
+            
+        }
+        console.log(vertices);
+        console.log(indices);
+        console.log(list_vertices);
+        console.log(position.x+" is X");
+        console.log(position.y+" is Y");
+    }
+    else if (menu === "edit"){
+        console.log("You are editing");
+    }
     render();
     });
 
