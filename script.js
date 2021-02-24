@@ -123,7 +123,6 @@ function setColor(redval, greenval, blueval, numvertices){
 function editColor(redval, greenval, blueval, shape_number){
     var i;
     var j = 2;
-    console.log(colors);
     for (i = 0; i < colors[shape_number].length/3; i++){
         if (i == 0){
             colors[shape_number][i] = redval;
@@ -136,7 +135,6 @@ function editColor(redval, greenval, blueval, shape_number){
             colors[shape_number][i+j+2] = blueval;
             j = j + 2;
     }
-    console.log(colors);
     }
 }
 
