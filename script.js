@@ -108,7 +108,7 @@ function setIndices(numVertices, prevNumSisi){
 
 function setColor(redval, greenval, blueval, numvertices){
     var i;
-    colors = [];
+    //colors = [];
     for (i = 0; i < numvertices; i++){
         colors.push(redval);
         colors.push(greenval);
@@ -117,7 +117,11 @@ function setColor(redval, greenval, blueval, numvertices){
 }
 
 function pointerOnWhat(x_pos, y_pos){
-    return 
+    for (var i = 0; i < shape_center_point.length; i++){
+        if (calculateDistance(x_pos, y_pos, shape_center_point[i][0], shape_center_point[i][1]) < 0.1){
+            console.log("u r clicking on shape");
+        }
+    }
 }
 
 function calculateDistance(x0, y0, x1, y1){
@@ -171,21 +175,21 @@ window.onload = function init() {
 
     r.addEventListener("click", function() {
     redValue = r.value/255;
-    setColor(redValue, greenValue, blueValue, 4);
+    //setColor(redValue, greenValue, blueValue, nside_chosen);
     });
 
     var g = document.getElementById("green");
 
     g.addEventListener("click", function() {
     greenValue = g.value/255;
-    setColor(redValue, greenValue, blueValue, 4);
+    //setColor(redValue, greenValue, blueValue, 4);
     });
 
     var b = document.getElementById("blue");
 
     b.addEventListener("click", function() {
     blueValue = b.value/255;
-    setColor(redValue, greenValue, blueValue, 4);
+    //setColor(redValue, greenValue, blueValue, 4);
     });
 
     var mn = document.getElementById("selected_menu");
@@ -211,9 +215,11 @@ window.onload = function init() {
         else if (shape_chosen === "square"){
             setIndices(4, vertices.length/3);
             setVertices(defaultSquare, position.x, position.y, 4);
+            setColor(redValue, greenValue, blueValue, 4);
         }
         else if (shape_chosen === "polygon"){
             setIndices(nside_chosen, vertices.length/3);
+            setColor(redValue, greenValue, blueValue, nside_chosen);
             if (nside_chosen == 3){
                 setVertices(defaultPolithree, position.x, position.y, nside_chosen);
             }
@@ -233,6 +239,7 @@ window.onload = function init() {
     }
     else if (menu === "edit"){
         console.log("You are editing");
+        pointerOnWhat(position.x, position.y);
     }
     render();
     });
