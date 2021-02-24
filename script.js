@@ -109,19 +109,46 @@ function setIndices(numVertices, prevNumSisi){
 function setColor(redval, greenval, blueval, numvertices){
     var i;
     //colors = [];
+    var temp_arr = [];
     for (i = 0; i < numvertices; i++){
-        colors.push(redval);
-        colors.push(greenval);
-        colors.push(blueval);
+        temp_arr.push(redval);
+        temp_arr.push(greenval);
+        temp_arr.push(blueval);
     }
+    colors.push(temp_arr);
+}
+
+function editColor(redval, greenval, blueval, shape_number){
+    var i;
+    console.log(colors);
+    for (i = 0; i < colors[shape_number].length/3; i++){
+        colors[shape_number][i] = redval;
+        colors[shape_number][i+1] = greenval;
+        colors[shape_number][i+2] = blueval;
+        i = i + 2;
+    }
+    console.log(colors);
 }
 
 function pointerOnWhat(x_pos, y_pos){
+    var selected;
     for (var i = 0; i < shape_center_point.length; i++){
         if (calculateDistance(x_pos, y_pos, shape_center_point[i][0], shape_center_point[i][1]) < 0.1){
-            console.log("u r clicking on shape");
+            console.log("u r clicking on shape nr. "+i);
+            selected = i;
         }
     }
+    return selected;
+}
+
+function flattenArray(array){
+    var flatten = [];
+    for (var i = 0; i < array.length; i++){
+        for (var j = 0; j < array[i].length; j++){
+            flatten.push(array[i][j]);
+        }
+    }
+    return flatten;
 }
 
 function calculateDistance(x0, y0, x1, y1){
@@ -152,7 +179,6 @@ window.onload = function init() {
     canvas = document.getElementById("ourCanvas");
     gl = canvas.getContext('experimental-webgl');
 
-    // gl = WebGLUtils.setupWebGL(canvas);
     if (!gl) {
     alert("WebGL isn't available");
     }
@@ -229,8 +255,8 @@ window.onload = function init() {
             else if (nside_chosen == 5){
                 setVertices(defaultPolima, position.x, position.y, nside_chosen);
             }
-            
         }
+        console.log(colors + " COLOR YANG ATAS");
         console.log(vertices);
         console.log(indices);
         console.log(list_vertices);
@@ -239,7 +265,7 @@ window.onload = function init() {
     }
     else if (menu === "edit"){
         console.log("You are editing");
-        pointerOnWhat(position.x, position.y);
+        editColor(redValue, greenValue, blueValue, pointerOnWhat(position.x, position.y));
     }
     render();
     });
@@ -251,15 +277,15 @@ window.onload = function init() {
 } 
 function render() {
     /*========== Defining and storing the geometry and colors =========*/
-
-    // indices = [1,2,0,2,3,0];
+    var flatten_colors = flattenArray(colors);
+    var flatten_vertices = flattenArray(list_vertices);
 
     // Create an empty buffer object to store vertex buffer
     var vertex_buffer = gl.createBuffer();
     // Bind appropriate array buffer to it
     gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
     // Pass the vertex data to the buffer
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(flatten_vertices), gl.STATIC_DRAW);
     // Unbind the buffer
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
@@ -275,7 +301,7 @@ function render() {
     // Create an empty buffer object and store color data
     var color_buffer = gl.createBuffer ();
     gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(flatten_colors), gl.STATIC_DRAW);
 
     /*====================== Shaders =======================*/
 
@@ -466,7 +492,7 @@ function renderlines(){
     // Create an empty buffer object and store color data
     var color_buffer = gl.createBuffer ();
     gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(flatten_colors), gl.STATIC_DRAW);
 
     var shaderProgram = initShaderProgram();
 
