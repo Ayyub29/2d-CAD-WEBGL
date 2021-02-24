@@ -75,6 +75,26 @@ function resize(defaultShape, k){
     return resizedShape;
 }
 
+function resizeOnEdit(multiplier, shapeIndex){
+    var i;
+    var j = 2;
+    var k = list_vertices[shapeIndex].length;
+    for (i = 0; i < k/3; i++){
+        console.log(i);
+        if (i == 0){
+            list_vertices[shapeIndex][i] = (list_vertices[shapeIndex][i] * multiplier) - (multiplier * shape_center_point[shapeIndex][0]) + shape_center_point[shapeIndex][0];
+            list_vertices[shapeIndex][i+1] = (list_vertices[shapeIndex][i+1] * multiplier) - (multiplier * shape_center_point[shapeIndex][1]) + shape_center_point[shapeIndex][1];
+            list_vertices[shapeIndex][i+2] = (list_vertices[shapeIndex][i+2] * multiplier) + 0;
+        }
+        else{
+            list_vertices[shapeIndex][i+j] = (list_vertices[shapeIndex][i+j] * multiplier) - (multiplier * shape_center_point[shapeIndex][0]) + shape_center_point[shapeIndex][0];
+            list_vertices[shapeIndex][i+j+1] = (list_vertices[shapeIndex][i+j+1] * multiplier) - (multiplier * shape_center_point[shapeIndex][1]) + shape_center_point[shapeIndex][1];
+            list_vertices[shapeIndex][i+j+2] = (list_vertices[shapeIndex][i+j+2] * multiplier) + 0;
+            j = j + 2;
+        }
+    }
+}
+
 function setVertices(defaultShape, transX, transY, numVertices){
     var i;
     var j = 0;
@@ -295,6 +315,9 @@ window.onload = function init() {
         console.log("You are editing");
         var shapeSelected = pointerOnWhat(position.x, position.y);
         editColor(redValue, greenValue, blueValue, shapeSelected);
+        if (size_chosen != 0.1){
+            resizeOnEdit(size_chosen * 10, shapeSelected);
+        }
         render();
     }  
     });
