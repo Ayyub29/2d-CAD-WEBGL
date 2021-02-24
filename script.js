@@ -17,24 +17,10 @@ var maxNumVertices = 20000;
 var editedShapeIndex;
 
 var defaultSquare = [
-    -0.1,0.1,0.0,
-    -0.1,-0.1,0.0,
-    0.1,-0.1,0.0,
-    0.1,0.1,0.0,
-]
-
-var defaultPolithree =[
-    0.0, 0.0, 0.0,
-    -0.4, 0.0, 0.0,        
-    -0.2, 0.2, 0.0,
-]
-
-var defaultPolima = [
-    0.1,0.5,0.0,    
-    0.0,0.25,0.0,            
-    0.25,0.0,0.0,
-    0.5,0.25,0.0,         
-    0.4,0.5,0.0,
+    -1.0,1.0,0.0,
+    -1.0,-1.0,0.0,
+    1,-1,0.0,
+    1,1,0.0,
 ]
 
 var delay = 50;
@@ -51,6 +37,7 @@ var lineindices = [];
 
 var shape_chosen = "line";
 var nside_chosen = 3;
+var size_chosen = 0;
 
 var mouseClicked = false;
 var amountClicked = 0;
@@ -112,10 +99,10 @@ function setVertices(defaultShape, transX, transY, numVertices){
 function setIndices(numVertices, prevNumSisi){
     var j;
     for (j = 1; j < numVertices-1; j++) {
-        indices.push(j + prevNumSisi);
-        indices.push(j + prevNumSisi + 1);
+        indices.unshift(j + prevNumSisi);
+        indices.unshift(j + prevNumSisi + 1);
         if (numVertices > 2){
-            indices.push(0 + prevNumSisi);
+            indices.unshift(0 + prevNumSisi);
         }
     }
 }
@@ -123,31 +110,21 @@ function setIndices(numVertices, prevNumSisi){
 function setColor(redval, greenval, blueval, numvertices){
     var i;
     //colors = [];
-    var temp_arr = [];
     for (i = 0; i < numvertices; i++){
-        temp_arr.push(redval);
-        temp_arr.push(greenval);
-        temp_arr.push(blueval);
+        colors.push(redval);
+        colors.push(greenval);
+        colors.push(blueval);
     }
-    colors.push(temp_arr);
 }
 
 function editColor(redval, greenval, blueval, shape_number){
     var i;
-    var j = 2;
     console.log(colors);
     for (i = 0; i < colors[shape_number].length/3; i++){
-        if (i == 0){
-            colors[shape_number][i] = redval;
-            colors[shape_number][i+1] = greenval;
-            colors[shape_number][i+2] = blueval;
-        }
-        else{
-            colors[shape_number][i+j] = redval;
-            colors[shape_number][i+j+1] = greenval;
-            colors[shape_number][i+j+2] = blueval;
-            j = j + 2;
-        }
+        colors[shape_number][i] = redval;
+        colors[shape_number][i+1] = greenval;
+        colors[shape_number][i+2] = blueval;
+        i = i + 2;
     }
     console.log(colors);
 }
@@ -182,12 +159,16 @@ function createVertexfromShape(n, length){
     var angle = (2 * Math.PI) / (n);
     var cur_x = length * Math.cos(angle);
     var cur_y = length * Math.sin(angle);
-    for (var i = 1; i < n; i++){
+    for (var i = 1; i <= n; i++){
         vertex.push(cur_x);
         vertex.push(cur_y);
-        cur_x = Math.cos(angle) * cur_x - Math.sin(angle) * cur_y;
-        cur_y = Math.cos(angle) * cur_y + Math.sin(angle) * cur_x;
+        vertex.push(0);
+        var cnt_x = Math.cos(angle) * cur_x - Math.sin(angle) * cur_y;
+        var cnt_y = Math.cos(angle) * cur_y + Math.sin(angle) * cur_x;
+        cur_x = cnt_x;
+        cur_y = cnt_y;
     }
+    console.log(vertex);
     return vertex
 }
 
@@ -209,14 +190,22 @@ window.onload = function init() {
     alert("WebGL isn't available");
     }
     initframe();
-    var shp = document.getElementById("shape");
 
+    var sz = document.getElementById("resize");
+    size_chosen = sz.value;
+
+    sz.addEventListener("click", function() {
+    size_chosen = sz.value;
+    });
+
+    var shp = document.getElementById("shape");
+    shape_chosen = shp.value;
     shp.addEventListener("click", function() {
     shape_chosen = shp.value;
     });
 
     var ns = document.getElementById("n-side");
-
+    nside_chosen = ns.value;
     ns.addEventListener("click", function() {
     nside_chosen = ns.value;
     console.log(nside_chosen);
@@ -247,7 +236,7 @@ window.onload = function init() {
     });
 
     var mn = document.getElementById("selected_menu");
-    
+    menu = mn.value;
     mn.addEventListener("click", function() {
     menu = mn.value;
     });
@@ -269,30 +258,26 @@ window.onload = function init() {
             linecolors.push(blueValue);
             console.log(linevertices);
             if ((amountClicked % 2 == 0) && (amountClicked > 0)){
-                lineindices.push(lineindices.length+1);
-                lineindices.push(lineindices.length+1);
+                lineindices.unshift(lineindices.length+1);
+                lineindices.unshift(lineindices.length+1);
             }
             amountClicked = amountClicked + 1;
             render();
         }
         else if (shape_chosen === "square"){
             setIndices(4, vertices.length/3);
-            setVertices(defaultSquare, position.x, position.y, 4);
+            var test = resize(defaultSquare,size_chosen);
+            console.log(test);
+            setVertices(test, position.x, position.y, 4);
             setColor(redValue, greenValue, blueValue, 4);
             render();
+            
         }
         else if (shape_chosen === "polygon"){
             setIndices(nside_chosen, vertices.length/3);
+            var test = createVertexfromShape(nside_chosen,size_chosen);
+            setVertices(test, position.x, position.y, nside_chosen);
             setColor(redValue, greenValue, blueValue, nside_chosen);
-            if (nside_chosen == 3){
-                setVertices(defaultPolithree, position.x, position.y, nside_chosen);
-            }
-            else if (nside_chosen == 4){
-                setVertices(defaultSquare, position.x, position.y, nside_chosen);
-            }
-            else if (nside_chosen == 5){
-                setVertices(defaultPolima, position.x, position.y, nside_chosen);
-            }
             render();
         }
     }
@@ -320,8 +305,6 @@ function initframe(){
 }
 
 function render() {
-    var flatten_colors = flattenArray(colors);
-    var flatten_vertices = flattenArray(list_vertices);
 
     // INIT SHADER
     var vertCode =
@@ -364,7 +347,7 @@ function render() {
 
     //BIND BUFFER BUAT TRIANGLE STUFF : SQUARE && POLYGON
     gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(flatten_vertices), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Index_Buffer);
@@ -372,7 +355,7 @@ function render() {
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(flatten_colors), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
 
     
     gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
