@@ -245,6 +245,7 @@ window.onload = function init() {
     var c = document.getElementById("clear")
     c.addEventListener("click", function(){
     clearCanvas(canvas);
+    render();
     });
 
     canvas.addEventListener("mousedown", function(event){
