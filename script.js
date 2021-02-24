@@ -111,11 +111,13 @@ function setIndices(numVertices, prevNumSisi){
 function setColor(redval, greenval, blueval, numvertices){
     var i;
     //colors = [];
+    var temp_arr = [];
     for (i = 0; i < numvertices; i++){
-        colors.push(redval);
-        colors.push(greenval);
-        colors.push(blueval);
+        temp_arr.push(redval);
+        temp_arr.push(greenval);
+        temp_arr.push(blueval);
     }
+    colors.push(temp_arr);colors.push(temp_arr);
 }
 
 function editColor(redval, greenval, blueval, shape_number){
@@ -194,7 +196,6 @@ window.onload = function init() {
     canvas = document.getElementById("ourCanvas");
     gl = canvas.getContext('experimental-webgl');
 
-    // gl = WebGLUtils.setupWebGL(canvas);
     if (!gl) {
     alert("WebGL isn't available");
     }
