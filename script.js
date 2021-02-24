@@ -117,7 +117,7 @@ function setColor(redval, greenval, blueval, numvertices){
         temp_arr.push(greenval);
         temp_arr.push(blueval);
     }
-    colors.push(temp_arr);colors.push(temp_arr);
+    colors.push(temp_arr);
 }
 
 function editColor(redval, greenval, blueval, shape_number){
