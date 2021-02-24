@@ -43,6 +43,24 @@ var mouseClicked = false;
 var amountClicked = 0;
 var points = [];
 
+const savetoLocalStorage = () => {
+    localStorage.setItem('vertices',JSON.stringify(vertices));
+    localStorage.setItem('indices',JSON.stringify(indices));
+    localStorage.setItem('colors',JSON.stringify(colors));
+    localStorage.setItem('linecolors',JSON.stringify(linecolors));
+    localStorage.setItem('lineindices',JSON.stringify(lineindices));
+    localStorage.setItem('linevertices',JSON.stringify(linevertices));
+}
+
+function loadfromLocalStorage(){
+    vertices = JSON.parse(localStorage.getItem("vertices"));
+    indices = JSON.parse(localStorage.getItem("indices"));
+    colors = JSON.parse(localStorage.getItem("colors"));
+    linecolors = JSON.parse(localStorage.getItem("linecolors"));
+    linevertices = JSON.parse(localStorage.getItem("linevertices"));
+    lineindices = JSON.parse(localStorage.getItem("lineindices"));
+}
+
 function getIntendedPosition(event, canvas) {
 
     const bcr = canvas.getBoundingClientRect();
@@ -253,6 +271,15 @@ window.onload = function init() {
     c.addEventListener("click", function(){
     clearCanvas(canvas);
     render();
+    });
+
+    var save = document.getElementById("save")
+    save.addEventListener("click", savetoLocalStorage)
+
+    var load = document.getElementById("load")
+    load.addEventListener("click", function(){
+        loadfromLocalStorage();
+        render();
     });
 
     canvas.addEventListener("mousedown", function(event){
