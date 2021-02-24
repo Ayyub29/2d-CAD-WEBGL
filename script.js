@@ -11,6 +11,7 @@ var intendedLocation_Y = 0;
 var redValue = 0;
 var greenValue = 0;
 var blueValue = 0;
+var multiplierValue = 1;
 
 var colorArray;
 var maxNumVertices = 20000;
@@ -143,6 +144,12 @@ function setIndices(numVertices, prevNumSisi){
         if (numVertices > 2){
             indices.unshift(0 + prevNumSisi);
         }
+    }
+}
+
+function updateSize(multiplier, selectedIndex){
+    for (var i = 1; i < list_vertices[selectedIndex].length; i++){
+        list_vertices[selectedIndex][i] = list_vertices[selectedIndex][i] * multiplier;
     }
 }
 
@@ -279,6 +286,12 @@ window.onload = function init() {
     b.addEventListener("click", function() {
     blueValue = b.value/255;
     //setColor(redValue, greenValue, blueValue, 4);
+    });
+
+    var mv = document.getElementById("resize");
+    
+    mv.addEventListener("click", function() {
+    multiplierValue = mv.value;
     });
 
     var mn = document.getElementById("selected_menu");
