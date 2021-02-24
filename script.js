@@ -119,14 +119,22 @@ function setColor(redval, greenval, blueval, numvertices){
 
 function editColor(redval, greenval, blueval, shape_number){
     var i;
+    var j = 2;
     console.log(colors);
     for (i = 0; i < colors[shape_number].length/3; i++){
-        colors[shape_number][i] = redval;
-        colors[shape_number][i+1] = greenval;
-        colors[shape_number][i+2] = blueval;
-        i = i + 2;
+        if (i == 0){
+            colors[shape_number][i] = redval;
+            colors[shape_number][i+1] = greenval;
+            colors[shape_number][i+2] = blueval;
+        }
+        else{
+            colors[shape_number][i+j] = redval;
+            colors[shape_number][i+j+1] = greenval;
+            colors[shape_number][i+j+2] = blueval;
+            j = j + 2;
     }
     console.log(colors);
+    }
 }
 
 function pointerOnWhat(x_pos, y_pos){
@@ -265,6 +273,7 @@ window.onload = function init() {
             render();
         }
         else if (shape_chosen === "square"){
+            console.log(list_vertices);
             setIndices(4, vertices.length/3);
             var test = resize(defaultSquare,size_chosen);
             console.log(test);
@@ -305,6 +314,8 @@ function initframe(){
 }
 
 function render() {
+    var flatten_colors = flattenArray(colors);
+    var flatten_vertices = flattenArray(list_vertices);
 
     // INIT SHADER
     var vertCode =
@@ -347,7 +358,7 @@ function render() {
 
     //BIND BUFFER BUAT TRIANGLE STUFF : SQUARE && POLYGON
     gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(flatten_vertices), gl.STATIC_DRAW);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Index_Buffer);
@@ -355,7 +366,7 @@ function render() {
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(flatten_colors), gl.STATIC_DRAW);
 
     
     gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
