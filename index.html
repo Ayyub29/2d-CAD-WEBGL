@@ -7,6 +7,47 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <script src="http://greggman.github.com/webgl-fundamentals/webgl/resources/webgl-utils.js"></script>
     <script src="script.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+    .dropbtn {
+      background-color: #3498DB;
+      color: white;
+      padding: 16px;
+      font-size: 16px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .dropbtn:hover, .dropbtn:focus {
+      background-color: #2980B9;
+    }
+
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: #f1f1f1;
+      min-width: 540px;
+      overflow: auto;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+      z-index: 1;
+    }
+
+    .dropdown-content a {
+      color: black;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+    }
+
+    .dropdown a:hover {background-color: #ddd;}
+
+    .show {display: block;}
+    </style>
   </head>
 
   <body>
@@ -84,6 +125,40 @@
         <button id="clear">
           Clear Canvas
         </button>
+
+        <br>
+        <br>
+
+        <div class="dropdown">
+          <button onclick="myFunction()" class="dropbtn">Help?</button>
+          <div id="myDropdown" class="dropdown-content">
+            <a href="#bantuan">1. Pilih bangunan di menu Choose a shape<br>
+              2. Jika memilih poligon, tentukan jumlah sisi yang diinginkan dengan n-side
+              <br>3. Warna dapat dipilih dengan menslide RGB
+              <br>4. Drawing mode dipilih jika ingin menggambar di canvas
+              <br>5. Edit mode dipilih untuk mengubah warna ataupun ukuran untuk bangunan yang ada di canvas</a>
+          </div>
+        </div>
+        
+        <script>
+        function myFunction() {
+          document.getElementById("myDropdown").classList.toggle("show");
+        }
+        
+
+        window.onclick = function(event) {
+          if (!event.target.matches('.dropbtn')) {
+            var dropdowns = document.getElementsByClassName("dropdown-content");
+            var i;
+            for (i = 0; i < dropdowns.length; i++) {
+              var openDropdown = dropdowns[i];
+              if (openDropdown.classList.contains('show')) {
+                openDropdown.classList.remove('show');
+              }
+            }
+          }
+        }
+        </script>
         
       </div>
     </div>
