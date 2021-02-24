@@ -16,11 +16,6 @@ var colorArray;
 var maxNumVertices = 20000;
 var editedShapeIndex;
 
-var defaultLine = [
-    -0.1,0.0,0.0,
-    0.1,0.0,0.0,
-]
-
 var defaultSquare = [
     -0.1,0.1,0.0,
     -0.1,-0.1,0.0,
@@ -49,10 +44,17 @@ var list_vertices = [];
 var shape_center_point = [];
 var vertices = [];
 var indices = [];
+
+var linecolors = [];
+var linevertices = [];
+var lineindices = [];
+
 var shape_chosen = "line";
 var nside_chosen = 3;
 
 var mouseClicked = false;
+var amountClicked = 0;
+var points = [];
 
 function getIntendedPosition(event, canvas) {
 
@@ -64,6 +66,18 @@ function getIntendedPosition(event, canvas) {
         x: (bcr_x - (canvas.scrollWidth/2)) / (canvas.scrollWidth/2),
         y: ((bcr_y > (canvas.scrollHeight/2)) ? -1 : 1) * Math.abs(bcr_y - (canvas.scrollHeight/2)) / (canvas.scrollHeight/2)
     };
+}
+
+function getVertex(event, canvas) {
+    const bcr = canvas.getBoundingClientRect();
+    const bcr_x = event.clientX - bcr.left;
+    const bcr_y = event.clientY - bcr.top;
+
+    var x = (bcr_x - (canvas.scrollWidth/2)) / (canvas.scrollWidth/2);
+    var y = ((bcr_y > (canvas.scrollHeight/2)) ? -1 : 1) * Math.abs(bcr_y - (canvas.scrollHeight/2)) / (canvas.scrollHeight/2)
+    
+    linevertices.push(x);
+    linevertices.push(y);
 }
 
 function resize(defaultShape, k){
@@ -109,13 +123,11 @@ function setIndices(numVertices, prevNumSisi){
 function setColor(redval, greenval, blueval, numvertices){
     var i;
     //colors = [];
-    var temp_arr = [];
     for (i = 0; i < numvertices; i++){
-        temp_arr.push(redval);
-        temp_arr.push(greenval);
-        temp_arr.push(blueval);
+        colors.push(redval);
+        colors.push(greenval);
+        colors.push(blueval);
     }
-    colors.push(temp_arr);
 }
 
 function editColor(redval, greenval, blueval, shape_number){
@@ -173,16 +185,20 @@ function clearCanvas(){
     vertices = [];
     indices = [];
     colors = [];
+    linevertices = [];
+    lineindices = [];
+    linecolors = [];
 }
 
 window.onload = function init() {
     canvas = document.getElementById("ourCanvas");
     gl = canvas.getContext('experimental-webgl');
 
+    // gl = WebGLUtils.setupWebGL(canvas);
     if (!gl) {
     alert("WebGL isn't available");
     }
-
+    initframe();
     var shp = document.getElementById("shape");
 
     shp.addEventListener("click", function() {
@@ -198,6 +214,7 @@ window.onload = function init() {
     });
 
     var r = document.getElementById("red");
+    redValue = r.value/255;
 
     r.addEventListener("click", function() {
     redValue = r.value/255;
@@ -205,6 +222,7 @@ window.onload = function init() {
     });
 
     var g = document.getElementById("green");
+    greenValue = g.value/255;
 
     g.addEventListener("click", function() {
     greenValue = g.value/255;
@@ -212,7 +230,7 @@ window.onload = function init() {
     });
 
     var b = document.getElementById("blue");
-
+    blueValue = b.value/255;
     b.addEventListener("click", function() {
     blueValue = b.value/255;
     //setColor(redValue, greenValue, blueValue, 4);
@@ -235,13 +253,23 @@ window.onload = function init() {
     if (menu === "drawing"){
         console.log("You are drawing");
         if (shape_chosen === "line"){
-            // setIndices(2, vertices.length/3);
-            // setVertices(defaultLine, position.x, position.y, 2);
+            getVertex(event, canvas);
+            linecolors.push(redValue);
+            linecolors.push(greenValue);
+            linecolors.push(blueValue);
+            console.log(linevertices);
+            if ((amountClicked % 2 == 0) && (amountClicked > 0)){
+                lineindices.push(lineindices.length+1);
+                lineindices.push(lineindices.length+1);
+            }
+            amountClicked = amountClicked + 1;
+            render();
         }
         else if (shape_chosen === "square"){
             setIndices(4, vertices.length/3);
             setVertices(defaultSquare, position.x, position.y, 4);
             setColor(redValue, greenValue, blueValue, 4);
+            render();
         }
         else if (shape_chosen === "polygon"){
             setIndices(nside_chosen, vertices.length/3);
@@ -255,57 +283,35 @@ window.onload = function init() {
             else if (nside_chosen == 5){
                 setVertices(defaultPolima, position.x, position.y, nside_chosen);
             }
+            render();
         }
-        console.log(colors + " COLOR YANG ATAS");
-        console.log(vertices);
-        console.log(indices);
-        console.log(list_vertices);
-        console.log(position.x+" is X");
-        console.log(position.y+" is Y");
     }
     else if (menu === "edit"){
         console.log("You are editing");
-        editColor(redValue, greenValue, blueValue, pointerOnWhat(position.x, position.y));
-    }
-    render();
+        var shapeSelected = pointerOnWhat(position.x, position.y);
+        editColor(redValue, greenValue, blueValue, shapeSelected);
+        render();
+    }  
     });
 
     canvas.addEventListener("mouseup", function(event){
     mouseClicked = false;
     });
-
 } 
+
+function initframe(){
+    gl.clearColor(0.9, 0.5, 0.5, 0.9);
+    // Enable the depth test
+    gl.enable(gl.DEPTH_TEST);
+    // Clear the color buffer bit
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    // Set the view port
+    gl.viewport(0,0,canvas.width,canvas.height);
+}
+
 function render() {
-    /*========== Defining and storing the geometry and colors =========*/
-    var flatten_colors = flattenArray(colors);
-    var flatten_vertices = flattenArray(list_vertices);
 
-    // Create an empty buffer object to store vertex buffer
-    var vertex_buffer = gl.createBuffer();
-    // Bind appropriate array buffer to it
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
-    // Pass the vertex data to the buffer
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(flatten_vertices), gl.STATIC_DRAW);
-    // Unbind the buffer
-    gl.bindBuffer(gl.ARRAY_BUFFER, null);
-
-    // Create an empty buffer object to store Index buffer
-    var Index_Buffer = gl.createBuffer();
-    // Bind appropriate array buffer to it
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Index_Buffer);
-    // Pass the vertex data to the buffer
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
-    // Unbind the buffer
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-
-    // Create an empty buffer object and store color data
-    var color_buffer = gl.createBuffer ();
-    gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(flatten_colors), gl.STATIC_DRAW);
-
-    /*====================== Shaders =======================*/
-
-    // Vertex shader source code
+    // INIT SHADER
     var vertCode =
         'attribute vec3 coordinates;' +
         'attribute vec3 color;'+
@@ -315,208 +321,93 @@ function render() {
         'vColor = color;'+
         '}';
 
-    // Create a vertex shader object
     var vertShader = gl.createShader(gl.VERTEX_SHADER);
-
-    // Attach vertex shader source code
     gl.shaderSource(vertShader, vertCode);
-
-    // Compile the vertex shader
     gl.compileShader(vertShader);
 
-    // Fragment shader source code
     var fragCode = 'precision mediump float;'+
                 'varying vec3 vColor;'+
                 'void main(void) {'+
                     'gl_FragColor = vec4(vColor, 1.);'+
                 '}';
 
-    // Create fragment shader object 
     var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
-
-    // Attach fragment shader source code
     gl.shaderSource(fragShader, fragCode);
-
-    // Compile the fragmentt shader
     gl.compileShader(fragShader);
 
-    // Create a shader program object to
-    // store the combined shader program
+    //INIT PROGRAM
     var shaderProgram = gl.createProgram();
 
-    // Attach a vertex shader
+    // ATTACH & LINK SHADER
     gl.attachShader(shaderProgram, vertShader);
-
-    // Attach a fragment shader
     gl.attachShader(shaderProgram, fragShader);
-
-    // Link both the programs
     gl.linkProgram(shaderProgram);
 
-    // Use the combined shader program object
     gl.useProgram(shaderProgram);
 
-    /* ======= Associating shaders to buffer objects =======*/
-
-    // Bind vertex buffer object
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
-
-    // Bind index buffer object
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Index_Buffer); 
-    // Get the attribute location
-    var coord = gl.getAttribLocation(shaderProgram, "coordinates");
-    // Point an attribute to the currently bound VBO
-    gl.vertexAttribPointer(coord, 3, gl.FLOAT, false, 0, 0);
-    // Enable the attribute
-    gl.enableVertexAttribArray(coord);
-
-    // bind the color buffer
-    gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer);
-    // get the attribute location
-    var color = gl.getAttribLocation(shaderProgram, "color");
-    // point attribute to the volor buffer object
-    gl.vertexAttribPointer(color, 3, gl.FLOAT, false,0,0) ;
-    // enable the color attribute
-    gl.enableVertexAttribArray(color);
-
-    /*============= Drawing the Quad ================*/
-    // Clear the canvas
-    gl.clearColor(0.9, 0.5, 0.5, 0.9);
-    // Enable the depth test
-    gl.enable(gl.DEPTH_TEST);
-    // Clear the color buffer bit
-    gl.clear(gl.COLOR_BUFFER_BIT);
-    // Set the view port
-    gl.viewport(0,0,canvas.width,canvas.height);
-    // Draw the square
-    gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
-    setTimeout(
-        function() {
-            render();
-        }, 5000
-    );
-}
-
-
-//BAGIANNYA LINES
-
-
-function bindBuffer(vertex_buffer, Index_Buffer, vertices, indices){
-    // Bind appropriate array buffer to it
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
-    // Pass the vertex data to the buffer
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-    // Unbind the buffer
-    gl.bindBuffer(gl.ARRAY_BUFFER, null);
-    // Bind appropriate array buffer to it
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Index_Buffer);
-    // // Pass the vertex data to the buffer
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
-    // // Unbind the buffer
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-}
-
-function draw(shape){
-    // Clear the canvas
-    gl.clearColor(0.9, 0.5, 0.5, 0.9);
-    // Enable the depth test
-    gl.enable(gl.DEPTH_TEST);
-    // Clear the color buffer bit
-    gl.clear(gl.COLOR_BUFFER_BIT);
-    // Set the view port
-    gl.viewport(0,0,canvas.width,canvas.height);
-    // Draw the square
-    gl.drawElements(gl.LINES, indices.length, gl.UNSIGNED_SHORT,0);
-}
-
-function initShaderProgram(){
-     // Vertex shader source code
-     var vertCode =
-     'attribute vec3 coordinates;' +
-     'attribute vec3 color;'+
-     'varying vec3 vColor;'+
-     'void main(void) {' +
-     ' gl_Position = vec4(coordinates, 1.0);' +
-     'vColor = color;'+
-     '}';
-
-    // Create a vertex shader object
-    var vertShader = gl.createShader(gl.VERTEX_SHADER);
-
-    // Attach vertex shader source code
-    gl.shaderSource(vertShader, vertCode);
-
-    // Compile the vertex shader
-    gl.compileShader(vertShader);
-
-    // Fragment shader source code
-    var fragCode = 'precision mediump float;'+
-                'varying vec3 vColor;'+
-                'void main(void) {'+
-                    'gl_FragColor = vec4(vColor, 1.);'+
-                '}';
-
-    // Create fragment shader object 
-    var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
-
-    // Attach fragment shader source code
-    gl.shaderSource(fragShader, fragCode);
-
-    // Compile the fragmentt shader
-    gl.compileShader(fragShader);
-
-    // Create a shader program object to
-    // store the combined shader program
-    var shaderProgram = gl.createProgram();
-
-    // Attach a vertex shader
-    gl.attachShader(shaderProgram, vertShader);
-
-    // Attach a fragment shader
-    gl.attachShader(shaderProgram, fragShader);
-
-    // Link both the programs
-    gl.linkProgram(shaderProgram);
-
-    // Use the combined shader program object
-    gl.useProgram(shaderProgram);
-    return shaderProgram;
-}
-
-function renderlines(){
+    //INIT BUFFER
     var vertex_buffer = gl.createBuffer();
     var Index_Buffer = gl.createBuffer();
-    
-    bindBuffer(vertex_buffer, Index_Buffer, vertex, indices);
-    
-    // Create an empty buffer object and store color data
     var color_buffer = gl.createBuffer ();
-    gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(flatten_colors), gl.STATIC_DRAW);
 
-    var shaderProgram = initShaderProgram();
-
-    // Bind vertex buffer object
+    //BIND BUFFER BUAT TRIANGLE STUFF : SQUARE && POLYGON
     gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
-    // Bind index buffer object
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Index_Buffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+
+    
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Index_Buffer); 
-    // Get the attribute location
+
     var coord = gl.getAttribLocation(shaderProgram, "coordinates");
-    // Point an attribute to the currently bound VBO
-    gl.vertexAttribPointer(coord, 2, gl.FLOAT, false, 0, 0);
-    // Enable the attribute
+    gl.vertexAttribPointer(coord, 3, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(coord);
 
-    // bind the color buffer
+
     gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer);
-    // get the attribute location
     var color = gl.getAttribLocation(shaderProgram, "color");
-    // point attribute to the volor buffer object
     gl.vertexAttribPointer(color, 3, gl.FLOAT, false,0,0) ;
-    // enable the color attribute
     gl.enableVertexAttribArray(color);
 
-    draw();
-}
 
+    //DRAW TRIANGLE STUFF
+    gl.clearColor(0.9, 0.5, 0.5, 0.9);
+    gl.enable(gl.DEPTH_TEST);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.viewport(0,0,canvas.width,canvas.height);
+    gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(linevertices), gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Index_Buffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(lineindices), gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+    var color_buffer = gl.createBuffer ();
+    gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(linecolors), gl.STATIC_DRAW);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Index_Buffer); 
+
+    var coord = gl.getAttribLocation(shaderProgram, "coordinates");
+    gl.vertexAttribPointer(coord, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(coord);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer);
+    var color = gl.getAttribLocation(shaderProgram, "color");
+    gl.vertexAttribPointer(color, 3, gl.FLOAT, false,0,0) 
+    gl.enableVertexAttribArray(color);
+
+    //DRAW LINE STUFF
+    gl.drawElements(gl.LINES, lineindices.length, gl.UNSIGNED_SHORT,0);
+}
