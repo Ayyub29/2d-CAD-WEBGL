@@ -68,10 +68,11 @@ function getVertex(event, canvas) {
 }
 
 function resize(defaultShape, k){
-    for(var i=0; i<defaultShape.length; i++) {
-        defaultShape[i] *= k;
+    var resizedShape = [];
+    for(var i=0; i< defaultShape.length; i++) {
+        resizedShape[i] = defaultShape[i] * k;
     }
-    return defaultShape;
+    return resizedShape;
 }
 
 function setVertices(defaultShape, transX, transY, numVertices){
